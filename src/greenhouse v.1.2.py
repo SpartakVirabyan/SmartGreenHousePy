@@ -71,7 +71,7 @@ class App(customtkinter.CTk):
         super().__init__()
         self.title("EcoFLat")
         self.geometry("750x550")
-        self.array = ['None', 'Auto', 'Tomato', 'Cucumber', 'Chamomile']
+        self.array = ['Выберите растение', 'Огурец', 'Помидор','Клубника','Листья Салата']
         # set grid layout 1x2
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -83,6 +83,7 @@ class App(customtkinter.CTk):
         })
         # Set default
         self.ref = db.reference('/')
+        self.plants = db.reference('/Plants')
        # self.ref.set({
         #   'Plant types': 'None',
        #   'Heating': False,
@@ -101,24 +102,25 @@ class App(customtkinter.CTk):
         self.home_frame.grid_columnconfigure(0, weight=1)
         self.home_frame_large_image_label = customtkinter.CTkLabel(self.home_frame, text="",image=self.large_test_image)
         self.home_frame_large_image_label.grid()
-        self.optionemenu = customtkinter.CTkOptionMenu(self.home_frame,values=self.array,command=self.change_mod_event)
+        self.optionemenu = customtkinter.CTkOptionMenu(self.home_frame,values=self.array)
         self.optionemenu.grid(row=3, column=0, padx=40, pady=(10), sticky="nsew")
-        self.optionemenu.set("None")
-        self.add_button = customtkinter.CTkButton(self.home_frame, text="+", height=30, width=30)
-        self.add_button.grid(sticky="W",row=3,padx=5)
+        self.optionemenu.set("Выберите растение")
+        #self.add_button = customtkinter.CTkButton(self.home_frame, text="+", height=30, width=30)
+        #self.add_button.grid(sticky="W",row=3,padx=5)
         self.home_frame_button_1 = customtkinter.CTkButton(self.home_frame, text="Нагрев", image=self.icon,
                                                            command=lambda: self.button('Heating'))
         self.home_frame_button_1.grid(row=4,sticky="W",padx=20, pady=10)
         self.temperatureText = customtkinter.CTkLabel(self.home_frame, text="Температура")
         self.temperatureText.grid(row=4, padx=30)
-        self.temperature = customtkinter.CTkLabel(self.home_frame, text=self.get("Temperature")+"°C")
+        self.temperature = customtkinter.CTkLabel(self.home_frame, text=self.get_temperature()+"°C")
         self.temperature.grid(sticky="e", row=4,padx=100)
+        self.temperature.after(100,self.temperature.configure(text=self.get_temperature()+"°C"))
         self.home_frame_button_2 = customtkinter.CTkButton(self.home_frame, text="Продув", image=self.icon_1,
                                                            command=lambda: self.button('Cooling'))
         self.home_frame_button_2.grid(row=5, sticky="W", padx=20, pady=10)
         self.humidityText = customtkinter.CTkLabel(self.home_frame, text="Влажность")
         self.humidityText.grid(row=5, padx=30)
-        self.humidity = customtkinter.CTkLabel(self.home_frame, text=self.get("Humidity")+"%")
+        self.humidity = customtkinter.CTkLabel(self.home_frame, text=self.get_humidity()+"%")
         self.humidity.grid(sticky="e", row=5,padx=100)
         self.home_frame_button_3 = customtkinter.CTkButton(self.home_frame, text="Вода", image=self.icon_2,
                                                            command=lambda: self.button('Water'))
@@ -205,7 +207,6 @@ class App(customtkinter.CTk):
                     """)
         self.textbox.grid(row=2,column=0)
 
-
     def feedbackFun(self):
         self.feedback_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.feedback_frame.grid_columnconfigure(0, weight=1)
@@ -289,10 +290,15 @@ class App(customtkinter.CTk):
             self.feedback_frame.grid_forget()
 
 
-    def get(self,function):
+    def get_temperature(self):
         while True:
-            ref = db.reference('/')
-            return ref.get()[function]
+            ref = db.reference('/Temperature')
+            return ref.get()
+
+    def get_humidity(self):
+        while True:
+            ref = db.reference('/Humidity')
+            return ref.get()
     # sets into firebase
     def set(self, part, bool):
         ref = db.reference('/')
@@ -328,9 +334,14 @@ class App(customtkinter.CTk):
         customtkinter.set_widget_scaling(new_scaling_float)
 
     # changing types
-    def change_mod_event(self, new_scaling: str):
-        self.set('Plant types', new_scaling)
 
 
-App().mainloop()
+app = App()
+app.mainloop()
+while True:
+    temperature = customtkinter.CTkLabel(app.home_frame, text=app.get_temperature() + "°C")
+    temperature.grid(sticky="e", row=4, padx=100)
+    humidity = customtkinter.CTkLabel(app.home_frame, text=app.get_humidity() + "%")
+    humidity.grid(sticky="e", row=5, padx=100)
+
 
